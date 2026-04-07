@@ -8,6 +8,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JARVIS_PY="$SCRIPT_DIR/jarvis.py"
+VENV_DIR="$SCRIPT_DIR/venv"
+VENV_PYTHON="$VENV_DIR/bin/python"
 AUTOSTART_DIR="$HOME/.config/autostart"
 DESKTOP_FILE="$AUTOSTART_DIR/jarvis.desktop"
 ENV_FILE="$SCRIPT_DIR/.env"
@@ -20,7 +22,14 @@ echo ""
 
 # ── 1. Dependências Python ────────────────────────────────────
 echo "  [1/4] Instalando dependências Python..."
-pip3 install --quiet pvporcupine pyaudio
+
+# Criar virtualenv se não existir
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR"
+    echo "        Virtualenv criado em: $VENV_DIR"
+fi
+
+"$VENV_PYTHON" -m pip install --quiet pvporcupine pyaudio
 echo "        pvporcupine e pyaudio instalados."
 
 # ── 2. Configurar Access Key ──────────────────────────────────
@@ -65,7 +74,7 @@ cat > "$DESKTOP_FILE" << EOF
 Type=Application
 Name=JARVIS
 Comment=Assistente de voz - wake word "Jarvis"
-Exec=bash -c 'sleep 5 && python3 $JARVIS_PY'
+Exec=bash -c 'sleep 5 && $VENV_PYTHON $JARVIS_PY'
 Terminal=false
 Hidden=false
 X-GNOME-Autostart-enabled=true
@@ -79,7 +88,7 @@ echo "  ╔═══════════════════════
 echo "  ║  Instalação concluída!                            ║"
 echo "  ║                                                   ║"
 echo "  ║  Para iniciar agora:                              ║"
-echo "  ║    python3 $JARVIS_PY"
+echo "  ║    $VENV_PYTHON $JARVIS_PY"
 echo "  ║                                                   ║"
 echo "  ║  Fale 'Jarvis' para ativar.                       ║"
 echo "  ║                                                   ║"
