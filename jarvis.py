@@ -34,15 +34,17 @@ COOLDOWN = 4.0  # segundos entre ativações
 
 
 # ============================================================
-#  AÇÕES — edite aqui o que acontece ao falar "Jarvis"
+#  AÇÕES — edite aqui o que acontece ao falar "Ei claude"
 # ============================================================
 
 def executar_acoes():
     jarvis_diz("Ativando sistemas, senhor.")
 
+    abrir_url("https://carefy.atlassian.net/jira/software/projects/TI/boards/1")
     abrir_url("https://www.youtube.com/watch?v=5RdmcuQm6EU&list=RD5RdmcuQm6EU&start_radio=1")
     abrir_programa(["code"])
     abrir_terminal_com_comando("claude")
+    abrir_terminal_com_comando("lazydocker")
 
 
 
@@ -146,8 +148,8 @@ def main():
     try:
         porcupine = pvporcupine.create(
             access_key=access_key,
-            keyword_paths=["Ei-claude_pt_linux_v4_0_0.ppn"],
-            model_path="porcupine_params_pt.pv",
+            keyword_paths=[os.path.join(os.path.dirname(os.path.abspath(__file__)), "Ei-claude_pt_linux_v4_0_0.ppn")],
+            model_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "porcupine_params_pt.pv"),
         )
     except pvporcupine.PorcupineInvalidArgumentError:
         print("\n  ERRO: Access Key inválida.")
