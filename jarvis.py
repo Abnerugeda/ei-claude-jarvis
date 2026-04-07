@@ -40,11 +40,17 @@ COOLDOWN = 4.0  # segundos entre ativações
 def executar_acoes():
     jarvis_diz("Ativando sistemas, senhor.")
 
+    # Abre tudo em background primeiro
+    abrir_programa(["claude-desktop"])
     abrir_url("https://carefy.atlassian.net/jira/software/projects/TI/boards/1")
-    abrir_url("https://www.youtube.com/watch?v=5RdmcuQm6EU&list=RD5RdmcuQm6EU&start_radio=1")
-    abrir_programa(["code"])
-    abrir_terminal_com_comando("claude")
-    abrir_terminal_com_comando("lazydocker")
+
+    # YouTube por último — fica em foco
+    time.sleep(1)
+    abrir_youtube_autoplay("https://www.youtube.com/watch?v=5RdmcuQm6EU&list=RD5RdmcuQm6EU&start_radio=1")
+
+    # Minimiza o terminal e posiciona Claude Desktop à direita
+    minimizar_depois("Terminal", delay=4)
+    snap_direita("claude", delay=4)
 
 
 
@@ -63,6 +69,59 @@ def abrir_url(url: str):
         jarvis_diz(f"Navegador → {url}")
     except Exception as e:
         jarvis_diz(f"Erro ao abrir URL: {e}")
+
+
+def snap_direita(nome_janela: str, delay: float = 3.0):
+    def _snap():
+        time.sleep(delay)
+        try:
+            resultado = subprocess.run(
+                ["xdotool", "search", "--name", nome_janela],
+                capture_output=True, text=True,
+            )
+            wids = resultado.stdout.strip().splitlines()
+            if wids:
+                wid = wids[0]
+                subprocess.run(["xdotool", "windowfocus", wid], capture_output=True)
+                time.sleep(0.2)
+                subprocess.run(["xdotool", "key", "super+Right"], capture_output=True)
+        except Exception:
+            pass
+    threading.Thread(target=_snap, daemon=True).start()
+
+
+def minimizar_depois(nome_janela: str, delay: float = 3.0):
+    def _min():
+        time.sleep(delay)
+        try:
+            resultado = subprocess.run(
+                ["xdotool", "search", "--name", nome_janela],
+                capture_output=True, text=True,
+            )
+            for wid in resultado.stdout.strip().splitlines():
+                subprocess.run(["xdotool", "windowminimize", wid], capture_output=True)
+        except Exception:
+            pass
+    threading.Thread(target=_min, daemon=True).start()
+
+
+def abrir_youtube_autoplay(url: str):
+    webbrowser.open(url)
+    jarvis_diz(f"YouTube → {url}")
+
+    def pressionar_play():
+        time.sleep(3)  # aguarda a página carregar
+        try:
+            # Foca a janela do browser e pressiona espaço para dar play
+            subprocess.run(
+                ["xdotool", "search", "--sync", "--onlyvisible", "--name", "YouTube"],
+                capture_output=True, timeout=5,
+            )
+            subprocess.run(["xdotool", "key", "space"], capture_output=True)
+        except Exception:
+            pass
+
+    threading.Thread(target=pressionar_play, daemon=True).start()
 
 
 def abrir_programa(cmd: list):
